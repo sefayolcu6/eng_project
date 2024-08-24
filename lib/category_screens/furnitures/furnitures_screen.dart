@@ -142,7 +142,7 @@ class _FurnituresScreenState extends State<FurnituresScreen> {
           icon: const Icon(Icons.chevron_left),
           color: AppConstant.white,
         ),
-        title: const Text("Hayvanlar"),
+        title: const Text("Eşyalar"),
       ),
       body: Stack(
         alignment: Alignment.center,
