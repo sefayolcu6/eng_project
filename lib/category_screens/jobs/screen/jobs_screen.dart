@@ -138,7 +138,7 @@ class _JobsScreenState extends State<JobsScreen> {
           icon: const Icon(Icons.chevron_left),
           color: AppConstant.white,
         ),
-        title: const Text("Giysiler"),
+        title: const Text("Meslekler"),
       ),
       body: Stack(
         alignment: Alignment.center,
