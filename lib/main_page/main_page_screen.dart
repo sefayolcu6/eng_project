@@ -1,15 +1,24 @@
 import 'package:eng_project/category_screens/animals/screen/animals_screen.dart';
+import 'package:eng_project/category_screens/animals/animals_view_model/animals_cubit.dart';
+import 'package:eng_project/category_screens/clothes/clothes_view_model/clothes_cubit_dart';
 import 'package:eng_project/category_screens/clothes/screen/clothes_screen.dart';
+import 'package:eng_project/category_screens/colors/colors_view_model/colors_cubit.dart';
 import 'package:eng_project/category_screens/colors/screen/colors_screen.dart';
+import 'package:eng_project/category_screens/fruits/fruits_view_model/fruits_cubit.dart';
 import 'package:eng_project/category_screens/fruits/screen/fruits_screen.dart';
 import 'package:eng_project/category_screens/furnitures/furnitures_screen.dart';
+import 'package:eng_project/category_screens/furnitures/furnitures_view_model/furnitures_cubit.dart';
+import 'package:eng_project/category_screens/jobs/jobs_view_model/jobs_cubit.dart';
 import 'package:eng_project/category_screens/jobs/screen/jobs_screen.dart';
+import 'package:eng_project/category_screens/plants/plants_view_model/plants_cubit.dart';
 import 'package:eng_project/category_screens/plants/screen/plants_screen.dart';
 import 'package:eng_project/category_screens/vegetables/screen/vegetables_screen.dart';
+import 'package:eng_project/category_screens/vegetables/vegetables_view_model/vegetables_cubit.dart';
 import 'package:eng_project/constant/app_constant.dart';
 import 'package:eng_project/constant/extensions.dart';
 import 'package:eng_project/constant/localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class MainPage extends StatefulWidget {
@@ -97,30 +106,69 @@ class _MainPageState extends State<MainPage> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => const AnimalsScreen(),
+            builder: (context) => BlocProvider(
+              create: (context) => AnimalsCubit(),
+              child: AnimalsScreen(),
+            ),
           ),
         );
       case 1:
-        Navigator.push(context,
-            MaterialPageRoute(builder: (context) => const FurnituresScreen()));
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => BlocProvider(
+                      create: (context) => FurnituresCubit(),
+                      child: FurnituresScreen(),
+                    )));
       case 2:
-        Navigator.push(context,
-            MaterialPageRoute(builder: (context) => const FruitsScreen()));
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => BlocProvider(
+                      create: (context) => FruitsCubit(),
+                      child: FruitsScreen(),
+                    )));
       case 3:
-        Navigator.push(context,
-            MaterialPageRoute(builder: (context) => const VegetablesScreen()));
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => BlocProvider(
+                      create: (context) => VegetablesCubit(),
+                      child: VegetablesScreen(),
+                    )));
       case 4:
-        Navigator.push(context,
-            MaterialPageRoute(builder: (context) => const PlantsScreen()));
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => BlocProvider(
+                      create: (context) => PlantsCubit(),
+                      child: PlantsScreen(),
+                    )));
       case 5:
-        Navigator.push(context,
-            MaterialPageRoute(builder: (context) => const ColorsScreen()));
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => BlocProvider(
+                      create: (context) => ColorsCubit(),
+                      child: ColorsScreen(),
+                    )));
       case 6:
-        Navigator.push(context,
-            MaterialPageRoute(builder: (context) => const ClothesScreen()));
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => BlocProvider(
+                    create: (context) => ClothesCubit(),
+                    child: ClothesScreen(),
+                  )),
+        );
       case 7:
-        Navigator.push(context,
-            MaterialPageRoute(builder: (context) => const JobsScreen()));
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => BlocProvider(
+                      create: (context) => JobsCubit(),
+                      child: JobsScreen(),
+                    )));
 
         break;
       default:

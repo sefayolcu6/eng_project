@@ -1,4 +1,6 @@
-import 'dart:async';
+
+import 'package:eng_project/category_screens/clothes/clothes_view_model/clothes_cubit_dart';
+import 'package:eng_project/category_screens/clothes/clothes_view_model/clothes_state.dart';
 import 'package:eng_project/category_screens/clothes/questions.dart';
 import 'package:eng_project/constant/app_constant.dart';
 import 'package:eng_project/constant/extensions.dart';
@@ -8,6 +10,7 @@ import 'package:eng_project/widgets/error_flushbar.dart';
 import 'package:eng_project/widgets/info_flushbar.dart';
 import 'package:eng_project/widgets/text_button.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lottie/lottie.dart';
 
 class ClothesScreen extends StatefulWidget {
@@ -17,30 +20,27 @@ class ClothesScreen extends StatefulWidget {
   State<ClothesScreen> createState() => _ClothesScreenState();
 }
 
-class _ClothesScreenState extends State<ClothesScreen> {
-  int currentQuestionIndex = 0;
-  int rightToTry = 5;
-  bool isTrueResult = false;
-  int correctPiece = 0;
-  int wrongPiece = 0;
+class _ClothesScreenState extends State<ClothesScreen> with ScreenProperties {
+  @override
+  void initState() {
+    super.initState();
+    clothesCubit = context.read<ClothesCubit>();
+  }
 
   void nextQuestion(String result) {
     if (ClothesQuestions.questions[currentQuestionIndex]["Result"] == result) {
       correctPiece++;
-      setState(() {
-        isTrueResult = true;
-      });
 
+      isTrueResult = true;
+      clothesCubit.refreshState();
       infoFlushbar(context, "TEBRİKLER!!",
           "Doğru Cevap, bir sonraki soruya geçebilirsiniz..");
     } else if (rightToTry == 1) {
       errorFlushbar(context, "UYARI!!",
-          "Deneme hakkınız bitti. Ana menüye yönlendiriliyorsunuz..");
-      Timer.periodic(const Duration(seconds: 5), (timer) {
-        setState(() {
-          Navigator.pop(context);
-        });
-      });
+              "Deneme hakkınız bitti. Ana menüye yönlendiriliyorsunuz..")
+          .then(
+        (value) => Navigator.pop(context),
+      );
     } else {
       rightToTry--;
       wrongPiece++;
@@ -71,13 +71,13 @@ class _ClothesScreenState extends State<ClothesScreen> {
                     ],
                     buttonText: "Evet",
                     buttonOntap: () {
-                      setState(() {
-                        currentQuestionIndex = 0;
-                        isTrueResult = false;
-                        wrongPiece = 0;
-                        correctPiece = 0;
-                      });
+                      currentQuestionIndex = 0;
+                      isTrueResult = false;
+                      wrongPiece = 0;
+                      correctPiece = 0;
+
                       Navigator.pop(context);
+                      clothesCubit.refreshState();
                     });
               },
               text: 'Başa Dön'),
@@ -109,11 +109,10 @@ class _ClothesScreenState extends State<ClothesScreen> {
                         title: 'SONUCUNUZ');
                   } else {
                     if (isTrueResult == true) {
-                      setState(() {
-                        currentQuestionIndex = (currentQuestionIndex + 1) %
-                            ClothesQuestions.questions.length;
-                        isTrueResult = false;
-                      });
+                      currentQuestionIndex = (currentQuestionIndex + 1) %
+                          ClothesQuestions.questions.length;
+                      isTrueResult = false;
+                      clothesCubit.refreshState();
                     } else {
                       errorFlushbar(context, "UYARI!!",
                           "Bu soruyu cevaplamadan yeni soruya geçemezsiniz");
@@ -143,98 +142,112 @@ class _ClothesScreenState extends State<ClothesScreen> {
         ),
         title: const Text("Giysiler"),
       ),
-      body: Stack(
-        alignment: Alignment.center,
-        children: [
-          Padding(
-            padding: EdgeInsets.all(AppConstant.padding8),
-            child: Align(
-              alignment: Alignment.topLeft,
-              child: CircleAvatar(
-                backgroundColor: AppConstant.darkBlue,
-                child: Text(
-                  ClothesQuestions.questions[currentQuestionIndex]["Index"]
-                      .toString(),
-                  style: TextStyle(color: AppConstant.white),
-                ),
-              ),
-            ),
-          ),
-          Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Image.asset(
-                  fit: BoxFit.contain,
-                  height: context.screenWidth15(),
-                  width: context.screenWidth15(),
-                  ClothesQuestions.questions[currentQuestionIndex]["Image"]
-                      .toString(),
-                ),
-                SizedBox(
-                  height: context.screenWidth4(),
-                  width: context.screenWidth15(),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        ClothesQuestions.questions[currentQuestionIndex]["Name"]
-                            .toString(),
-                        style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: AppConstant.red),
-                      )
-                    ],
+      body: BlocBuilder<ClothesCubit, ClothesState>(
+        builder: (context, state) {
+          return Stack(
+            alignment: Alignment.center,
+            children: [
+              Padding(
+                padding: EdgeInsets.all(AppConstant.padding8),
+                child: Align(
+                  alignment: Alignment.topLeft,
+                  child: CircleAvatar(
+                    backgroundColor: AppConstant.darkBlue,
+                    child: Text(
+                      ClothesQuestions.questions[currentQuestionIndex]["Index"]
+                          .toString(),
+                      style: TextStyle(color: AppConstant.white),
+                    ),
                   ),
                 ),
-                Wrap(
+              ),
+              Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    appButton(
-                      context: context,
-                      ontap: () {
-                        nextQuestion(OptionsEnum.A.name);
-                      },
-                      text: ClothesQuestions.questions[currentQuestionIndex]
-                          ["Options"][0],
+                    Image.asset(
+                      fit: BoxFit.contain,
+                      height: context.screenWidth15(),
+                      width: context.screenWidth15(),
+                      ClothesQuestions.questions[currentQuestionIndex]["Image"]
+                          .toString(),
                     ),
-                    appButton(
-                      context: context,
-                      ontap: () {
-                        nextQuestion(OptionsEnum.B.name);
-                      },
-                      text: ClothesQuestions.questions[currentQuestionIndex]
-                          ["Options"][1],
+                    SizedBox(
+                      height: context.screenWidth4(),
+                      width: context.screenWidth15(),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            ClothesQuestions.questions[currentQuestionIndex]
+                                    ["Name"]
+                                .toString(),
+                            style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: AppConstant.red),
+                          )
+                        ],
+                      ),
                     ),
-                    appButton(
-                      context: context,
-                      ontap: () {
-                        nextQuestion(OptionsEnum.C.name);
-                      },
-                      text: ClothesQuestions.questions[currentQuestionIndex]
-                          ["Options"][2],
-                    ),
-                    appButton(
-                      context: context,
-                      ontap: () {
-                        nextQuestion(OptionsEnum.D.name);
-                      },
-                      text: ClothesQuestions.questions[currentQuestionIndex]
-                          ["Options"][3],
+                    Wrap(
+                      children: [
+                        appButton(
+                          context: context,
+                          ontap: () {
+                            nextQuestion(OptionsEnum.A.name);
+                          },
+                          text: ClothesQuestions.questions[currentQuestionIndex]
+                              ["Options"][0],
+                        ),
+                        appButton(
+                          context: context,
+                          ontap: () {
+                            nextQuestion(OptionsEnum.B.name);
+                          },
+                          text: ClothesQuestions.questions[currentQuestionIndex]
+                              ["Options"][1],
+                        ),
+                        appButton(
+                          context: context,
+                          ontap: () {
+                            nextQuestion(OptionsEnum.C.name);
+                          },
+                          text: ClothesQuestions.questions[currentQuestionIndex]
+                              ["Options"][2],
+                        ),
+                        appButton(
+                          context: context,
+                          ontap: () {
+                            nextQuestion(OptionsEnum.D.name);
+                          },
+                          text: ClothesQuestions.questions[currentQuestionIndex]
+                              ["Options"][3],
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
-            ),
-          ),
-          isTrueResult
-              ? Lottie.asset(repeat: false, "images/lottie/check.json")
-              : const Center()
-        ],
+              ),
+              isTrueResult
+                  ? Lottie.asset(repeat: false, "images/lottie/check.json")
+                  : const Center()
+            ],
+          );
+        },
       ),
     );
   }
+}
+
+mixin ScreenProperties {
+  late ClothesCubit clothesCubit;
+  int currentQuestionIndex = 0;
+  int rightToTry = 5;
+  bool isTrueResult = false;
+  int correctPiece = 0;
+  int wrongPiece = 0;
 }
 
 enum OptionsEnum { A, B, C, D }

@@ -1,4 +1,5 @@
-import 'dart:async';
+import 'package:eng_project/category_screens/plants/plants_view_model/plants_cubit.dart';
+import 'package:eng_project/category_screens/plants/plants_view_model/plants_state.dart';
 import 'package:eng_project/category_screens/plants/questions.dart';
 import 'package:eng_project/constant/app_constant.dart';
 import 'package:eng_project/constant/extensions.dart';
@@ -8,6 +9,7 @@ import 'package:eng_project/widgets/error_flushbar.dart';
 import 'package:eng_project/widgets/info_flushbar.dart';
 import 'package:eng_project/widgets/text_button.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lottie/lottie.dart';
 
 class PlantsScreen extends StatefulWidget {
@@ -17,30 +19,28 @@ class PlantsScreen extends StatefulWidget {
   State<PlantsScreen> createState() => _PlantsScreenState();
 }
 
-class _PlantsScreenState extends State<PlantsScreen> {
-  int currentQuestionIndex = 0;
-  int rightToTry = 5;
-  bool isTrueResult = false;
-  int correctPiece = 0;
-  int wrongPiece = 0;
+class _PlantsScreenState extends State<PlantsScreen> with ScreenProperties {
+  @override
+  void initState() {
+    plantsCubit = context.read<PlantsCubit>();
+    super.initState();
+  }
 
   void nextQuestion(String result) {
     if (PlantsQuestions.questions[currentQuestionIndex]["Result"] == result) {
       correctPiece++;
-      setState(() {
-        isTrueResult = true;
-      });
+
+      isTrueResult = true;
+      plantsCubit.refreshState();
 
       infoFlushbar(context, "TEBRİKLER!!",
           "Doğru Cevap, bir sonraki soruya geçebilirsiniz..");
     } else if (rightToTry == 1) {
       errorFlushbar(context, "UYARI!!",
-          "Deneme hakkınız bitti. Ana menüye yönlendiriliyorsunuz..");
-      Timer.periodic(const Duration(seconds: 5), (timer) {
-        setState(() {
-          Navigator.pop(context);
-        });
-      });
+              "Deneme hakkınız bitti. Ana menüye yönlendiriliyorsunuz..")
+          .then(
+        (value) => Navigator.pop(context),
+      );
     } else {
       rightToTry--;
       wrongPiece++;
@@ -71,12 +71,11 @@ class _PlantsScreenState extends State<PlantsScreen> {
                     ],
                     buttonText: "Evet",
                     buttonOntap: () {
-                      setState(() {
-                        currentQuestionIndex = 0;
-                        isTrueResult = false;
-                        wrongPiece = 0;
-                        correctPiece = 0;
-                      });
+                      currentQuestionIndex = 0;
+                      isTrueResult = false;
+                      wrongPiece = 0;
+                      correctPiece = 0;
+                      plantsCubit.refreshState();
                       Navigator.pop(context);
                     });
               },
@@ -109,11 +108,10 @@ class _PlantsScreenState extends State<PlantsScreen> {
                         title: 'SONUCUNUZ');
                   } else {
                     if (isTrueResult == true) {
-                      setState(() {
-                        currentQuestionIndex = (currentQuestionIndex + 1) %
-                            PlantsQuestions.questions.length;
-                        isTrueResult = false;
-                      });
+                      currentQuestionIndex = (currentQuestionIndex + 1) %
+                          PlantsQuestions.questions.length;
+                      isTrueResult = false;
+                      plantsCubit.refreshState();
                     } else {
                       errorFlushbar(context, "UYARI!!",
                           "Bu soruyu cevaplamadan yeni soruya geçemezsiniz");
@@ -143,98 +141,112 @@ class _PlantsScreenState extends State<PlantsScreen> {
         ),
         title: const Text("Bitkiler"),
       ),
-      body: Stack(
-        alignment: Alignment.center,
-        children: [
-          Padding(
-            padding: EdgeInsets.all(AppConstant.padding8),
-            child: Align(
-              alignment: Alignment.topLeft,
-              child: CircleAvatar(
-                backgroundColor: AppConstant.darkBlue,
-                child: Text(
-                  PlantsQuestions.questions[currentQuestionIndex]["Index"]
-                      .toString(),
-                  style: TextStyle(color: AppConstant.white),
-                ),
-              ),
-            ),
-          ),
-          Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Image.asset(
-                  fit: BoxFit.contain,
-                  height: context.screenWidth15(),
-                  width: context.screenWidth15(),
-                  PlantsQuestions.questions[currentQuestionIndex]["Image"]
-                      .toString(),
-                ),
-                SizedBox(
-                  height: context.screenWidth4(),
-                  width: context.screenWidth15(),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        PlantsQuestions.questions[currentQuestionIndex]["Name"]
-                            .toString(),
-                        style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: AppConstant.red),
-                      )
-                    ],
+      body: BlocBuilder<PlantsCubit, PlantsState>(
+        builder: (context, state) {
+          return Stack(
+            alignment: Alignment.center,
+            children: [
+              Padding(
+                padding: EdgeInsets.all(AppConstant.padding8),
+                child: Align(
+                  alignment: Alignment.topLeft,
+                  child: CircleAvatar(
+                    backgroundColor: AppConstant.darkBlue,
+                    child: Text(
+                      PlantsQuestions.questions[currentQuestionIndex]["Index"]
+                          .toString(),
+                      style: TextStyle(color: AppConstant.white),
+                    ),
                   ),
                 ),
-                Wrap(
+              ),
+              Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    appButton(
-                      context: context,
-                      ontap: () {
-                        nextQuestion(OptionsEnum.A.name);
-                      },
-                      text: PlantsQuestions.questions[currentQuestionIndex]
-                          ["Options"][0],
+                    Image.asset(
+                      fit: BoxFit.contain,
+                      height: context.screenWidth15(),
+                      width: context.screenWidth15(),
+                      PlantsQuestions.questions[currentQuestionIndex]["Image"]
+                          .toString(),
                     ),
-                    appButton(
-                      context: context,
-                      ontap: () {
-                        nextQuestion(OptionsEnum.B.name);
-                      },
-                      text: PlantsQuestions.questions[currentQuestionIndex]
-                          ["Options"][1],
+                    SizedBox(
+                      height: context.screenWidth4(),
+                      width: context.screenWidth15(),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            PlantsQuestions.questions[currentQuestionIndex]
+                                    ["Name"]
+                                .toString(),
+                            style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: AppConstant.red),
+                          )
+                        ],
+                      ),
                     ),
-                    appButton(
-                      context: context,
-                      ontap: () {
-                        nextQuestion(OptionsEnum.C.name);
-                      },
-                      text: PlantsQuestions.questions[currentQuestionIndex]
-                          ["Options"][2],
-                    ),
-                    appButton(
-                      context: context,
-                      ontap: () {
-                        nextQuestion(OptionsEnum.D.name);
-                      },
-                      text: PlantsQuestions.questions[currentQuestionIndex]
-                          ["Options"][3],
+                    Wrap(
+                      children: [
+                        appButton(
+                          context: context,
+                          ontap: () {
+                            nextQuestion(OptionsEnum.A.name);
+                          },
+                          text: PlantsQuestions.questions[currentQuestionIndex]
+                              ["Options"][0],
+                        ),
+                        appButton(
+                          context: context,
+                          ontap: () {
+                            nextQuestion(OptionsEnum.B.name);
+                          },
+                          text: PlantsQuestions.questions[currentQuestionIndex]
+                              ["Options"][1],
+                        ),
+                        appButton(
+                          context: context,
+                          ontap: () {
+                            nextQuestion(OptionsEnum.C.name);
+                          },
+                          text: PlantsQuestions.questions[currentQuestionIndex]
+                              ["Options"][2],
+                        ),
+                        appButton(
+                          context: context,
+                          ontap: () {
+                            nextQuestion(OptionsEnum.D.name);
+                          },
+                          text: PlantsQuestions.questions[currentQuestionIndex]
+                              ["Options"][3],
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
-            ),
-          ),
-          isTrueResult
-              ? Lottie.asset(repeat: false, "images/lottie/check.json")
-              : const Center()
-        ],
+              ),
+              isTrueResult
+                  ? Lottie.asset(repeat: false, "images/lottie/check.json")
+                  : const Center()
+            ],
+          );
+        },
       ),
     );
   }
+}
+
+mixin ScreenProperties {
+  late PlantsCubit plantsCubit;
+  int currentQuestionIndex = 0;
+  int rightToTry = 5;
+  bool isTrueResult = false;
+  int correctPiece = 0;
+  int wrongPiece = 0;
 }
 
 enum OptionsEnum { A, B, C, D }

@@ -1,4 +1,5 @@
-import 'dart:async';
+import 'package:eng_project/category_screens/jobs/jobs_view_model/jobs_cubit.dart';
+import 'package:eng_project/category_screens/jobs/jobs_view_model/jobs_state.dart';
 import 'package:eng_project/category_screens/jobs/questions.dart';
 import 'package:eng_project/constant/app_constant.dart';
 import 'package:eng_project/constant/extensions.dart';
@@ -8,6 +9,7 @@ import 'package:eng_project/widgets/error_flushbar.dart';
 import 'package:eng_project/widgets/info_flushbar.dart';
 import 'package:eng_project/widgets/text_button.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lottie/lottie.dart';
 
 class JobsScreen extends StatefulWidget {
@@ -17,30 +19,28 @@ class JobsScreen extends StatefulWidget {
   State<JobsScreen> createState() => _JobsScreenState();
 }
 
-class _JobsScreenState extends State<JobsScreen> {
-  int currentQuestionIndex = 0;
-  int rightToTry = 5;
-  bool isTrueResult = false;
-  int correctPiece = 0;
-  int wrongPiece = 0;
+class _JobsScreenState extends State<JobsScreen> with ScreenProperties {
+  @override
+  void initState() {
+    jobsCubit = context.read<JobsCubit>();
+    super.initState();
+  }
 
   void nextQuestion(String result) {
     if (JobsQuestions.questions[currentQuestionIndex]["Result"] == result) {
       correctPiece++;
-      setState(() {
-        isTrueResult = true;
-      });
+
+      isTrueResult = true;
+      jobsCubit.refreshState();
 
       infoFlushbar(context, "TEBRİKLER!!",
           "Doğru Cevap, bir sonraki soruya geçebilirsiniz..");
     } else if (rightToTry == 1) {
       errorFlushbar(context, "UYARI!!",
-          "Deneme hakkınız bitti. Ana menüye yönlendiriliyorsunuz..");
-      Timer.periodic(const Duration(seconds: 5), (timer) {
-        setState(() {
-          Navigator.pop(context);
-        });
-      });
+              "Deneme hakkınız bitti. Ana menüye yönlendiriliyorsunuz..")
+          .then(
+        (value) => Navigator.pop(context),
+      );
     } else {
       rightToTry--;
       wrongPiece++;
@@ -71,12 +71,11 @@ class _JobsScreenState extends State<JobsScreen> {
                     ],
                     buttonText: "Evet",
                     buttonOntap: () {
-                      setState(() {
-                        currentQuestionIndex = 0;
-                        isTrueResult = false;
-                        wrongPiece = 0;
-                        correctPiece = 0;
-                      });
+                      currentQuestionIndex = 0;
+                      isTrueResult = false;
+                      wrongPiece = 0;
+                      correctPiece = 0;
+                      jobsCubit.refreshState();
                       Navigator.pop(context);
                     });
               },
@@ -106,11 +105,10 @@ class _JobsScreenState extends State<JobsScreen> {
                         title: 'SONUCUNUZ');
                   } else {
                     if (isTrueResult == true) {
-                      setState(() {
-                        currentQuestionIndex = (currentQuestionIndex + 1) %
-                            JobsQuestions.questions.length;
-                        isTrueResult = false;
-                      });
+                      currentQuestionIndex = (currentQuestionIndex + 1) %
+                          JobsQuestions.questions.length;
+                      isTrueResult = false;
+                      jobsCubit.refreshState();
                     } else {
                       errorFlushbar(context, "UYARI!!",
                           "Bu soruyu cevaplamadan yeni soruya geçemezsiniz");
@@ -140,98 +138,112 @@ class _JobsScreenState extends State<JobsScreen> {
         ),
         title: const Text("Meslekler"),
       ),
-      body: Stack(
-        alignment: Alignment.center,
-        children: [
-          Padding(
-            padding: EdgeInsets.all(AppConstant.padding8),
-            child: Align(
-              alignment: Alignment.topLeft,
-              child: CircleAvatar(
-                backgroundColor: AppConstant.darkBlue,
-                child: Text(
-                  JobsQuestions.questions[currentQuestionIndex]["Index"]
-                      .toString(),
-                  style: TextStyle(color: AppConstant.white),
-                ),
-              ),
-            ),
-          ),
-          Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Image.asset(
-                  fit: BoxFit.contain,
-                  height: context.screenWidth15(),
-                  width: context.screenWidth15(),
-                  JobsQuestions.questions[currentQuestionIndex]["Image"]
-                      .toString(),
-                ),
-                SizedBox(
-                  height: context.screenWidth4(),
-                  width: context.screenWidth15(),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        JobsQuestions.questions[currentQuestionIndex]["Name"]
-                            .toString(),
-                        style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: AppConstant.red),
-                      )
-                    ],
+      body: BlocBuilder<JobsCubit, JobsState>(
+        builder: (context, state) {
+          return Stack(
+            alignment: Alignment.center,
+            children: [
+              Padding(
+                padding: EdgeInsets.all(AppConstant.padding8),
+                child: Align(
+                  alignment: Alignment.topLeft,
+                  child: CircleAvatar(
+                    backgroundColor: AppConstant.darkBlue,
+                    child: Text(
+                      JobsQuestions.questions[currentQuestionIndex]["Index"]
+                          .toString(),
+                      style: TextStyle(color: AppConstant.white),
+                    ),
                   ),
                 ),
-                Wrap(
+              ),
+              Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    appButton(
-                      context: context,
-                      ontap: () {
-                        nextQuestion(OptionsEnum.A.name);
-                      },
-                      text: JobsQuestions.questions[currentQuestionIndex]
-                          ["Options"][0],
+                    Image.asset(
+                      fit: BoxFit.contain,
+                      height: context.screenWidth15(),
+                      width: context.screenWidth15(),
+                      JobsQuestions.questions[currentQuestionIndex]["Image"]
+                          .toString(),
                     ),
-                    appButton(
-                      context: context,
-                      ontap: () {
-                        nextQuestion(OptionsEnum.B.name);
-                      },
-                      text: JobsQuestions.questions[currentQuestionIndex]
-                          ["Options"][1],
+                    SizedBox(
+                      height: context.screenWidth4(),
+                      width: context.screenWidth15(),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            JobsQuestions.questions[currentQuestionIndex]
+                                    ["Name"]
+                                .toString(),
+                            style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: AppConstant.red),
+                          )
+                        ],
+                      ),
                     ),
-                    appButton(
-                      context: context,
-                      ontap: () {
-                        nextQuestion(OptionsEnum.C.name);
-                      },
-                      text: JobsQuestions.questions[currentQuestionIndex]
-                          ["Options"][2],
-                    ),
-                    appButton(
-                      context: context,
-                      ontap: () {
-                        nextQuestion(OptionsEnum.D.name);
-                      },
-                      text: JobsQuestions.questions[currentQuestionIndex]
-                          ["Options"][3],
+                    Wrap(
+                      children: [
+                        appButton(
+                          context: context,
+                          ontap: () {
+                            nextQuestion(OptionsEnum.A.name);
+                          },
+                          text: JobsQuestions.questions[currentQuestionIndex]
+                              ["Options"][0],
+                        ),
+                        appButton(
+                          context: context,
+                          ontap: () {
+                            nextQuestion(OptionsEnum.B.name);
+                          },
+                          text: JobsQuestions.questions[currentQuestionIndex]
+                              ["Options"][1],
+                        ),
+                        appButton(
+                          context: context,
+                          ontap: () {
+                            nextQuestion(OptionsEnum.C.name);
+                          },
+                          text: JobsQuestions.questions[currentQuestionIndex]
+                              ["Options"][2],
+                        ),
+                        appButton(
+                          context: context,
+                          ontap: () {
+                            nextQuestion(OptionsEnum.D.name);
+                          },
+                          text: JobsQuestions.questions[currentQuestionIndex]
+                              ["Options"][3],
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
-            ),
-          ),
-          isTrueResult
-              ? Lottie.asset(repeat: false, "images/lottie/check.json")
-              : const Center()
-        ],
+              ),
+              isTrueResult
+                  ? Lottie.asset(repeat: false, "images/lottie/check.json")
+                  : const Center()
+            ],
+          );
+        },
       ),
     );
   }
+}
+
+mixin ScreenProperties {
+  late JobsCubit jobsCubit;
+  int currentQuestionIndex = 0;
+  int rightToTry = 5;
+  bool isTrueResult = false;
+  int correctPiece = 0;
+  int wrongPiece = 0;
 }
 
 enum OptionsEnum { A, B, C, D }
