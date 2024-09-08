@@ -1,4 +1,4 @@
-import 'dart:async';
+
 import 'package:eng_project/category_screens/clothes/clothes_view_model/clothes_cubit_dart';
 import 'package:eng_project/category_screens/clothes/clothes_view_model/clothes_state.dart';
 import 'package:eng_project/category_screens/clothes/questions.dart';
@@ -37,15 +37,10 @@ class _ClothesScreenState extends State<ClothesScreen> with ScreenProperties {
           "Doğru Cevap, bir sonraki soruya geçebilirsiniz..");
     } else if (rightToTry == 1) {
       errorFlushbar(context, "UYARI!!",
-          "Deneme hakkınız bitti. Ana menüye yönlendiriliyorsunuz..");
-
-      // Tek seferlik bir zamanlayıcı kullanın
-      Timer(const Duration(seconds: 5), () {
-        if (mounted) {
-          Navigator.pop(context);
-        }
-        // clothesCubit.refreshState(); // Eğer state'i yenilemek istiyorsanız bunu mounted kontrolü içinde yapabilirsiniz.
-      });
+              "Deneme hakkınız bitti. Ana menüye yönlendiriliyorsunuz..")
+          .then(
+        (value) => Navigator.pop(context),
+      );
     } else {
       rightToTry--;
       wrongPiece++;

@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:eng_project/category_screens/jobs/jobs_view_model/jobs_cubit.dart';
 import 'package:eng_project/category_screens/jobs/jobs_view_model/jobs_state.dart';
 import 'package:eng_project/category_screens/jobs/questions.dart';
@@ -21,12 +20,6 @@ class JobsScreen extends StatefulWidget {
 }
 
 class _JobsScreenState extends State<JobsScreen> with ScreenProperties {
-  int currentQuestionIndex = 0;
-  int rightToTry = 5;
-  bool isTrueResult = false;
-  int correctPiece = 0;
-  int wrongPiece = 0;
-
   @override
   void initState() {
     jobsCubit = context.read<JobsCubit>();
@@ -44,11 +37,10 @@ class _JobsScreenState extends State<JobsScreen> with ScreenProperties {
           "Doğru Cevap, bir sonraki soruya geçebilirsiniz..");
     } else if (rightToTry == 1) {
       errorFlushbar(context, "UYARI!!",
-          "Deneme hakkınız bitti. Ana menüye yönlendiriliyorsunuz..");
-      Timer.periodic(const Duration(seconds: 5), (timer) {
-        Navigator.pop(context);
-        jobsCubit.refreshState();
-      });
+              "Deneme hakkınız bitti. Ana menüye yönlendiriliyorsunuz..")
+          .then(
+        (value) => Navigator.pop(context),
+      );
     } else {
       rightToTry--;
       wrongPiece++;
@@ -247,6 +239,11 @@ class _JobsScreenState extends State<JobsScreen> with ScreenProperties {
 
 mixin ScreenProperties {
   late JobsCubit jobsCubit;
+  int currentQuestionIndex = 0;
+  int rightToTry = 5;
+  bool isTrueResult = false;
+  int correctPiece = 0;
+  int wrongPiece = 0;
 }
 
 enum OptionsEnum { A, B, C, D }

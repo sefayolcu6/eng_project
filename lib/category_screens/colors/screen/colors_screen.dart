@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:eng_project/category_screens/colors/colors_view_model/colors_cubit.dart';
 import 'package:eng_project/category_screens/colors/colors_view_model/colors_state.dart';
 import 'package:eng_project/category_screens/colors/questions.dart';
@@ -37,12 +36,11 @@ class _ColorsScreenState extends State<ColorsScreen> with ScreenProperties {
       infoFlushbar(context, "TEBRİKLER!!",
           "Doğru Cevap, bir sonraki soruya geçebilirsiniz..");
     } else if (rightToTry == 1) {
-      errorFlushbar(context, "UYARI!!",
-          "Deneme hakkınız bitti. Ana menüye yönlendiriliyorsunuz..");
-      Timer.periodic(const Duration(seconds: 5), (timer) {
-        Navigator.pop(context);
-        colorsCubit.refreshState();
-      });
+     errorFlushbar(context, "UYARI!!",
+              "Deneme hakkınız bitti. Ana menüye yönlendiriliyorsunuz..")
+          .then(
+        (value) => Navigator.pop(context),
+      );
     } else {
       rightToTry--;
       wrongPiece++;

@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:eng_project/category_screens/plants/plants_view_model/plants_cubit.dart';
 import 'package:eng_project/category_screens/plants/plants_view_model/plants_state.dart';
 import 'package:eng_project/category_screens/plants/questions.dart';
@@ -38,11 +37,10 @@ class _PlantsScreenState extends State<PlantsScreen> with ScreenProperties {
           "Doğru Cevap, bir sonraki soruya geçebilirsiniz..");
     } else if (rightToTry == 1) {
       errorFlushbar(context, "UYARI!!",
-          "Deneme hakkınız bitti. Ana menüye yönlendiriliyorsunuz..");
-      Timer.periodic(const Duration(seconds: 5), (timer) {
-        Navigator.pop(context);
-        plantsCubit.refreshState();
-      });
+              "Deneme hakkınız bitti. Ana menüye yönlendiriliyorsunuz..")
+          .then(
+        (value) => Navigator.pop(context),
+      );
     } else {
       rightToTry--;
       wrongPiece++;

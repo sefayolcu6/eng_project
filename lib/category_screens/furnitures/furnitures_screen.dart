@@ -2,7 +2,6 @@ import 'package:eng_project/category_screens/furnitures/furnitures_view_model/fu
 import 'package:eng_project/category_screens/furnitures/furnitures_view_model/furnitures_state.dart';
 import 'package:eng_project/category_screens/furnitures/questions.dart';
 import 'package:flutter/material.dart';
-import 'dart:async';
 import 'package:eng_project/constant/app_constant.dart';
 import 'package:eng_project/constant/extensions.dart';
 import 'package:eng_project/widgets/alert_dialog.dart';
@@ -22,12 +21,6 @@ class FurnituresScreen extends StatefulWidget {
 
 class _FurnituresScreenState extends State<FurnituresScreen>
     with ScreenProperties {
-  int currentQuestionIndex = 0;
-  int rightToTry = 5;
-  bool isTrueResult = false;
-  int correctPiece = 0;
-  int wrongPiece = 0;
-
   @override
   void initState() {
     furnituresCubit = context.read<FurnituresCubit>();
@@ -46,11 +39,10 @@ class _FurnituresScreenState extends State<FurnituresScreen>
           "Doğru Cevap, bir sonraki soruya geçebilirsiniz..");
     } else if (rightToTry == 1) {
       errorFlushbar(context, "UYARI!!",
-          "Deneme hakkınız bitti. Ana menüye yönlendiriliyorsunuz..");
-      Timer.periodic(const Duration(seconds: 5), (timer) {
-        Navigator.pop(context);
-        furnituresCubit.refreshState();
-      });
+              "Deneme hakkınız bitti. Ana menüye yönlendiriliyorsunuz..")
+          .then(
+        (value) => Navigator.pop(context),
+      );
     } else {
       rightToTry--;
       wrongPiece++;
@@ -254,6 +246,11 @@ class _FurnituresScreenState extends State<FurnituresScreen>
 
 mixin ScreenProperties {
   late FurnituresCubit furnituresCubit;
+  int currentQuestionIndex = 0;
+  int rightToTry = 5;
+  bool isTrueResult = false;
+  int correctPiece = 0;
+  int wrongPiece = 0;
 }
 
 enum OptionsEnum { A, B, C, D }

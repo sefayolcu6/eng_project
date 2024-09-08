@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:eng_project/category_screens/fruits/fruits_view_model/fruits_cubit.dart';
 import 'package:eng_project/category_screens/fruits/fruits_view_model/fruits_state.dart';
 import 'package:eng_project/category_screens/fruits/questions.dart';
@@ -21,12 +20,6 @@ class FruitsScreen extends StatefulWidget {
 }
 
 class _FruitsScreenState extends State<FruitsScreen> with ScreenProperties {
-  int currentQuestionIndex = 0;
-  int rightToTry = 5;
-  bool isTrueResult = false;
-  int correctPiece = 0;
-  int wrongPiece = 0;
-
   @override
   void initState() {
     fruitsCubit = context.read<FruitsCubit>();
@@ -42,11 +35,10 @@ class _FruitsScreenState extends State<FruitsScreen> with ScreenProperties {
           "Doğru Cevap, bir sonraki soruya geçebilirsiniz..");
     } else if (rightToTry == 1) {
       errorFlushbar(context, "UYARI!!",
-          "Deneme hakkınız bitti. Ana menüye yönlendiriliyorsunuz..");
-      Timer.periodic(const Duration(seconds: 5), (timer) {
-        Navigator.pop(context);
-        fruitsCubit.refreshState();
-      });
+              "Deneme hakkınız bitti. Ana menüye yönlendiriliyorsunuz..")
+          .then(
+        (value) => Navigator.pop(context),
+      );
     } else {
       rightToTry--;
       wrongPiece++;
@@ -248,6 +240,11 @@ class _FruitsScreenState extends State<FruitsScreen> with ScreenProperties {
 
 mixin ScreenProperties {
   late FruitsCubit fruitsCubit;
+  int currentQuestionIndex = 0;
+  int rightToTry = 5;
+  bool isTrueResult = false;
+  int correctPiece = 0;
+  int wrongPiece = 0;
 }
 
 enum OptionsEnum { A, B, C, D }

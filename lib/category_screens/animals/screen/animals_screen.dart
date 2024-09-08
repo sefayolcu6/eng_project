@@ -1,4 +1,4 @@
-import 'dart:async';
+
 import 'package:eng_project/category_screens/animals/questions.dart';
 import 'package:eng_project/category_screens/animals/animals_view_model/animals_cubit.dart';
 import 'package:eng_project/category_screens/animals/animals_view_model/animals_state.dart';
@@ -38,11 +38,10 @@ class _AnimalsScreenState extends State<AnimalsScreen> with ScreenProperties {
       animalsCubit.refreshState();
     } else if (rightToTry == 1) {
       errorFlushbar(context, "UYARI!!",
-          "Deneme hakkınız bitti. Ana menüye yönlendiriliyorsunuz..");
-      Timer.periodic(const Duration(seconds: 5), (timer) {
-        animalsCubit.refreshState();
-        Navigator.pop(context);
-      });
+              "Deneme hakkınız bitti. Ana menüye yönlendiriliyorsunuz..")
+          .then(
+        (value) => Navigator.pop(context),
+      );
     } else {
       rightToTry--;
       wrongPiece++;
@@ -250,6 +249,7 @@ mixin ScreenProperties {
   bool isTrueResult = false;
   int correctPiece = 0;
   int wrongPiece = 0;
+  bool isNavigating = false;
 }
 
 enum OptionsEnum { A, B, C, D }
