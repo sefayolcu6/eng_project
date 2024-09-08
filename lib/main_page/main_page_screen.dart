@@ -8,6 +8,7 @@ import 'package:eng_project/category_screens/fruits/fruits_view_model/fruits_cub
 import 'package:eng_project/category_screens/fruits/screen/fruits_screen.dart';
 import 'package:eng_project/category_screens/furnitures/furnitures_screen.dart';
 import 'package:eng_project/category_screens/furnitures/furnitures_view_model/furnitures_cubit.dart';
+import 'package:eng_project/category_screens/jobs/jobs_view_model/jobs_cubit.dart';
 import 'package:eng_project/category_screens/jobs/screen/jobs_screen.dart';
 import 'package:eng_project/category_screens/plants/screen/plants_screen.dart';
 import 'package:eng_project/category_screens/vegetables/screen/vegetables_screen.dart';
@@ -149,8 +150,13 @@ class _MainPageState extends State<MainPage> {
                   )),
         );
       case 7:
-        Navigator.push(context,
-            MaterialPageRoute(builder: (context) => const JobsScreen()));
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => BlocProvider(
+                      create: (context) => JobsCubit(),
+                      child: JobsScreen(),
+                    )));
 
         break;
       default:
