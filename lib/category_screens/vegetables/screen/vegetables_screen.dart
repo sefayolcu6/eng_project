@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:eng_project/category_screens/vegetables/questions.dart';
+import 'package:eng_project/category_screens/vegetables/vegetables_view_model/vegetables_cubit.dart';
+import 'package:eng_project/category_screens/vegetables/vegetables_view_model/vegetables_state.dart';
 import 'package:eng_project/constant/app_constant.dart';
 import 'package:eng_project/constant/extensions.dart';
 import 'package:eng_project/widgets/alert_dialog.dart';
@@ -8,6 +10,7 @@ import 'package:eng_project/widgets/error_flushbar.dart';
 import 'package:eng_project/widgets/info_flushbar.dart';
 import 'package:eng_project/widgets/text_button.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lottie/lottie.dart';
 
 class VegetablesScreen extends StatefulWidget {
@@ -17,20 +20,26 @@ class VegetablesScreen extends StatefulWidget {
   State<VegetablesScreen> createState() => _VegetablesScreenState();
 }
 
-class _VegetablesScreenState extends State<VegetablesScreen> {
+class _VegetablesScreenState extends State<VegetablesScreen>
+    with ScreenProperties {
   int currentQuestionIndex = 0;
   int rightToTry = 5;
   bool isTrueResult = false;
   int correctPiece = 0;
   int wrongPiece = 0;
+  @override
+  void initState() {
+    vegetablesCubit = context.read<VegetablesCubit>();
+    super.initState();
+  }
 
   void nextQuestion(String result) {
     if (VegetablesQuestions.questions[currentQuestionIndex]["Result"] ==
         result) {
       correctPiece++;
-      setState(() {
-        isTrueResult = true;
-      });
+
+      isTrueResult = true;
+      vegetablesCubit.refreshState();
 
       infoFlushbar(context, "TEBRİKLER!!",
           "Doğru Cevap, bir sonraki soruya geçebilirsiniz..");
@@ -38,9 +47,8 @@ class _VegetablesScreenState extends State<VegetablesScreen> {
       errorFlushbar(context, "UYARI!!",
           "Deneme hakkınız bitti. Ana menüye yönlendiriliyorsunuz..");
       Timer.periodic(const Duration(seconds: 5), (timer) {
-        setState(() {
-          Navigator.pop(context);
-        });
+        Navigator.pop(context);
+        vegetablesCubit.refreshState();
       });
     } else {
       rightToTry--;
@@ -72,12 +80,11 @@ class _VegetablesScreenState extends State<VegetablesScreen> {
                     ],
                     buttonText: "Evet",
                     buttonOntap: () {
-                      setState(() {
-                        currentQuestionIndex = 0;
-                        isTrueResult = false;
-                        wrongPiece = 0;
-                        correctPiece = 0;
-                      });
+                      currentQuestionIndex = 0;
+                      isTrueResult = false;
+                      wrongPiece = 0;
+                      correctPiece = 0;
+                      vegetablesCubit.refreshState();
                       Navigator.pop(context);
                     });
               },
@@ -110,11 +117,10 @@ class _VegetablesScreenState extends State<VegetablesScreen> {
                         title: 'SONUCUNUZ');
                   } else {
                     if (isTrueResult == true) {
-                      setState(() {
-                        currentQuestionIndex = (currentQuestionIndex + 1) %
-                            VegetablesQuestions.questions.length;
-                        isTrueResult = false;
-                      });
+                      currentQuestionIndex = (currentQuestionIndex + 1) %
+                          VegetablesQuestions.questions.length;
+                      isTrueResult = false;
+                      vegetablesCubit.refreshState();
                     } else {
                       errorFlushbar(context, "UYARI!!",
                           "Bu soruyu cevaplamadan yeni soruya geçemezsiniz");
@@ -144,99 +150,109 @@ class _VegetablesScreenState extends State<VegetablesScreen> {
         ),
         title: const Text("Sebzeler"),
       ),
-      body: Stack(
-        alignment: Alignment.center,
-        children: [
-          Padding(
-            padding: EdgeInsets.all(AppConstant.padding8),
-            child: Align(
-              alignment: Alignment.topLeft,
-              child: CircleAvatar(
-                backgroundColor: AppConstant.darkBlue,
-                child: Text(
-                  VegetablesQuestions.questions[currentQuestionIndex]["Index"]
-                      .toString(),
-                  style: TextStyle(color: AppConstant.white),
-                ),
-              ),
-            ),
-          ),
-          Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Image.asset(
-                  fit: BoxFit.contain,
-                  height: context.screenWidth15(),
-                  width: context.screenWidth15(),
-                  VegetablesQuestions.questions[currentQuestionIndex]["Image"]
-                      .toString(),
-                ),
-                SizedBox(
-                  height: context.screenWidth4(),
-                  width: context.screenWidth15(),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        VegetablesQuestions.questions[currentQuestionIndex]
-                                ["Name"]
-                            .toString(),
-                        style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: AppConstant.red),
-                      )
-                    ],
+      body: BlocBuilder<VegetablesCubit, VegetablesState>(
+        builder: (context, state) {
+          return Stack(
+            alignment: Alignment.center,
+            children: [
+              Padding(
+                padding: EdgeInsets.all(AppConstant.padding8),
+                child: Align(
+                  alignment: Alignment.topLeft,
+                  child: CircleAvatar(
+                    backgroundColor: AppConstant.darkBlue,
+                    child: Text(
+                      VegetablesQuestions.questions[currentQuestionIndex]
+                              ["Index"]
+                          .toString(),
+                      style: TextStyle(color: AppConstant.white),
+                    ),
                   ),
                 ),
-                Wrap(
+              ),
+              Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    appButton(
-                      context: context,
-                      ontap: () {
-                        nextQuestion(OptionsEnum.A.name);
-                      },
-                      text: VegetablesQuestions.questions[currentQuestionIndex]
-                          ["Options"][0],
+                    Image.asset(
+                      fit: BoxFit.contain,
+                      height: context.screenWidth15(),
+                      width: context.screenWidth15(),
+                      VegetablesQuestions.questions[currentQuestionIndex]
+                              ["Image"]
+                          .toString(),
                     ),
-                    appButton(
-                      context: context,
-                      ontap: () {
-                        nextQuestion(OptionsEnum.B.name);
-                      },
-                      text: VegetablesQuestions.questions[currentQuestionIndex]
-                          ["Options"][1],
+                    SizedBox(
+                      height: context.screenWidth4(),
+                      width: context.screenWidth15(),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            VegetablesQuestions.questions[currentQuestionIndex]
+                                    ["Name"]
+                                .toString(),
+                            style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: AppConstant.red),
+                          )
+                        ],
+                      ),
                     ),
-                    appButton(
-                      context: context,
-                      ontap: () {
-                        nextQuestion(OptionsEnum.C.name);
-                      },
-                      text: VegetablesQuestions.questions[currentQuestionIndex]
-                          ["Options"][2],
-                    ),
-                    appButton(
-                      context: context,
-                      ontap: () {
-                        nextQuestion(OptionsEnum.D.name);
-                      },
-                      text: VegetablesQuestions.questions[currentQuestionIndex]
-                          ["Options"][3],
+                    Wrap(
+                      children: [
+                        appButton(
+                          context: context,
+                          ontap: () {
+                            nextQuestion(OptionsEnum.A.name);
+                          },
+                          text: VegetablesQuestions
+                              .questions[currentQuestionIndex]["Options"][0],
+                        ),
+                        appButton(
+                          context: context,
+                          ontap: () {
+                            nextQuestion(OptionsEnum.B.name);
+                          },
+                          text: VegetablesQuestions
+                              .questions[currentQuestionIndex]["Options"][1],
+                        ),
+                        appButton(
+                          context: context,
+                          ontap: () {
+                            nextQuestion(OptionsEnum.C.name);
+                          },
+                          text: VegetablesQuestions
+                              .questions[currentQuestionIndex]["Options"][2],
+                        ),
+                        appButton(
+                          context: context,
+                          ontap: () {
+                            nextQuestion(OptionsEnum.D.name);
+                          },
+                          text: VegetablesQuestions
+                              .questions[currentQuestionIndex]["Options"][3],
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
-            ),
-          ),
-          isTrueResult
-              ? Lottie.asset(repeat: false, "images/lottie/check.json")
-              : const Center()
-        ],
+              ),
+              isTrueResult
+                  ? Lottie.asset(repeat: false, "images/lottie/check.json")
+                  : const Center()
+            ],
+          );
+        },
       ),
     );
   }
+}
+
+mixin ScreenProperties {
+  late VegetablesCubit vegetablesCubit;
 }
 
 enum OptionsEnum { A, B, C, D }

@@ -13,6 +13,7 @@ import 'package:eng_project/category_screens/jobs/screen/jobs_screen.dart';
 import 'package:eng_project/category_screens/plants/plants_view_model/plants_cubit.dart';
 import 'package:eng_project/category_screens/plants/screen/plants_screen.dart';
 import 'package:eng_project/category_screens/vegetables/screen/vegetables_screen.dart';
+import 'package:eng_project/category_screens/vegetables/vegetables_view_model/vegetables_cubit.dart';
 import 'package:eng_project/constant/app_constant.dart';
 import 'package:eng_project/constant/extensions.dart';
 import 'package:eng_project/constant/localization.dart';
@@ -128,8 +129,13 @@ class _MainPageState extends State<MainPage> {
                       child: FruitsScreen(),
                     )));
       case 3:
-        Navigator.push(context,
-            MaterialPageRoute(builder: (context) => const VegetablesScreen()));
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => BlocProvider(
+                      create: (context) => VegetablesCubit(),
+                      child: VegetablesScreen(),
+                    )));
       case 4:
         Navigator.push(
             context,
