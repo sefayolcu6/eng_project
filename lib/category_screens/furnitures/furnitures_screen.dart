@@ -1,3 +1,5 @@
+import 'package:eng_project/category_screens/furnitures/furnitures_view_model/furnitures_cubit.dart';
+import 'package:eng_project/category_screens/furnitures/furnitures_view_model/furnitures_state.dart';
 import 'package:eng_project/category_screens/furnitures/questions.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
@@ -8,6 +10,7 @@ import 'package:eng_project/widgets/app_button.dart';
 import 'package:eng_project/widgets/error_flushbar.dart';
 import 'package:eng_project/widgets/info_flushbar.dart';
 import 'package:eng_project/widgets/text_button.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lottie/lottie.dart';
 
 class FurnituresScreen extends StatefulWidget {
@@ -17,20 +20,27 @@ class FurnituresScreen extends StatefulWidget {
   State<FurnituresScreen> createState() => _FurnituresScreenState();
 }
 
-class _FurnituresScreenState extends State<FurnituresScreen> {
+class _FurnituresScreenState extends State<FurnituresScreen>
+    with ScreenProperties {
   int currentQuestionIndex = 0;
   int rightToTry = 5;
   bool isTrueResult = false;
   int correctPiece = 0;
   int wrongPiece = 0;
 
+  @override
+  void initState() {
+    furnituresCubit = context.read<FurnituresCubit>();
+    super.initState();
+  }
+
   void nextQuestion(String result) {
     if (FurnituresQuestions.questions[currentQuestionIndex]["Result"] ==
         result) {
       correctPiece++;
-      setState(() {
-        isTrueResult = true;
-      });
+
+      isTrueResult = true;
+      furnituresCubit.refreshState();
 
       infoFlushbar(context, "TEBRİKLER!!",
           "Doğru Cevap, bir sonraki soruya geçebilirsiniz..");
@@ -38,9 +48,8 @@ class _FurnituresScreenState extends State<FurnituresScreen> {
       errorFlushbar(context, "UYARI!!",
           "Deneme hakkınız bitti. Ana menüye yönlendiriliyorsunuz..");
       Timer.periodic(const Duration(seconds: 5), (timer) {
-        setState(() {
-          Navigator.pop(context);
-        });
+        Navigator.pop(context);
+        furnituresCubit.refreshState();
       });
     } else {
       rightToTry--;
@@ -72,12 +81,11 @@ class _FurnituresScreenState extends State<FurnituresScreen> {
                     ],
                     buttonText: "Evet",
                     buttonOntap: () {
-                      setState(() {
-                        currentQuestionIndex = 0;
-                        isTrueResult = false;
-                        wrongPiece = 0;
-                        correctPiece = 0;
-                      });
+                      currentQuestionIndex = 0;
+                      isTrueResult = false;
+                      wrongPiece = 0;
+                      correctPiece = 0;
+                      furnituresCubit.refreshState();
                       Navigator.pop(context);
                     });
               },
@@ -110,11 +118,10 @@ class _FurnituresScreenState extends State<FurnituresScreen> {
                         title: 'SONUCUNUZ');
                   } else {
                     if (isTrueResult == true) {
-                      setState(() {
-                        currentQuestionIndex = (currentQuestionIndex + 1) %
-                            FurnituresQuestions.questions.length;
-                        isTrueResult = false;
-                      });
+                      currentQuestionIndex = (currentQuestionIndex + 1) %
+                          FurnituresQuestions.questions.length;
+                      isTrueResult = false;
+                      furnituresCubit.refreshState();
                     } else {
                       errorFlushbar(context, "UYARI!!",
                           "Bu soruyu cevaplamadan yeni soruya geçemezsiniz");
@@ -144,99 +151,109 @@ class _FurnituresScreenState extends State<FurnituresScreen> {
         ),
         title: const Text("Eşyalar"),
       ),
-      body: Stack(
-        alignment: Alignment.center,
-        children: [
-          Padding(
-            padding: EdgeInsets.all(AppConstant.padding8),
-            child: Align(
-              alignment: Alignment.topLeft,
-              child: CircleAvatar(
-                backgroundColor: AppConstant.darkBlue,
-                child: Text(
-                  FurnituresQuestions.questions[currentQuestionIndex]["Index"]
-                      .toString(),
-                  style: TextStyle(color: AppConstant.white),
-                ),
-              ),
-            ),
-          ),
-          Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Image.asset(
-                  fit: BoxFit.contain,
-                  height: context.screenWidth15(),
-                  width: context.screenWidth15(),
-                  FurnituresQuestions.questions[currentQuestionIndex]["Image"]
-                      .toString(),
-                ),
-                SizedBox(
-                  height: context.screenWidth4(),
-                  width: context.screenWidth15(),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        FurnituresQuestions.questions[currentQuestionIndex]
-                                ["Name"]
-                            .toString(),
-                        style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: AppConstant.red),
-                      )
-                    ],
+      body: BlocBuilder<FurnituresCubit, FurnituresState>(
+        builder: (context, state) {
+          return Stack(
+            alignment: Alignment.center,
+            children: [
+              Padding(
+                padding: EdgeInsets.all(AppConstant.padding8),
+                child: Align(
+                  alignment: Alignment.topLeft,
+                  child: CircleAvatar(
+                    backgroundColor: AppConstant.darkBlue,
+                    child: Text(
+                      FurnituresQuestions.questions[currentQuestionIndex]
+                              ["Index"]
+                          .toString(),
+                      style: TextStyle(color: AppConstant.white),
+                    ),
                   ),
                 ),
-                Wrap(
+              ),
+              Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    appButton(
-                      context: context,
-                      ontap: () {
-                        nextQuestion(OptionsEnum.A.name);
-                      },
-                      text: FurnituresQuestions.questions[currentQuestionIndex]
-                          ["Options"][0],
+                    Image.asset(
+                      fit: BoxFit.contain,
+                      height: context.screenWidth15(),
+                      width: context.screenWidth15(),
+                      FurnituresQuestions.questions[currentQuestionIndex]
+                              ["Image"]
+                          .toString(),
                     ),
-                    appButton(
-                      context: context,
-                      ontap: () {
-                        nextQuestion(OptionsEnum.B.name);
-                      },
-                      text: FurnituresQuestions.questions[currentQuestionIndex]
-                          ["Options"][1],
+                    SizedBox(
+                      height: context.screenWidth4(),
+                      width: context.screenWidth15(),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            FurnituresQuestions.questions[currentQuestionIndex]
+                                    ["Name"]
+                                .toString(),
+                            style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: AppConstant.red),
+                          )
+                        ],
+                      ),
                     ),
-                    appButton(
-                      context: context,
-                      ontap: () {
-                        nextQuestion(OptionsEnum.C.name);
-                      },
-                      text: FurnituresQuestions.questions[currentQuestionIndex]
-                          ["Options"][2],
-                    ),
-                    appButton(
-                      context: context,
-                      ontap: () {
-                        nextQuestion(OptionsEnum.D.name);
-                      },
-                      text: FurnituresQuestions.questions[currentQuestionIndex]
-                          ["Options"][3],
+                    Wrap(
+                      children: [
+                        appButton(
+                          context: context,
+                          ontap: () {
+                            nextQuestion(OptionsEnum.A.name);
+                          },
+                          text: FurnituresQuestions
+                              .questions[currentQuestionIndex]["Options"][0],
+                        ),
+                        appButton(
+                          context: context,
+                          ontap: () {
+                            nextQuestion(OptionsEnum.B.name);
+                          },
+                          text: FurnituresQuestions
+                              .questions[currentQuestionIndex]["Options"][1],
+                        ),
+                        appButton(
+                          context: context,
+                          ontap: () {
+                            nextQuestion(OptionsEnum.C.name);
+                          },
+                          text: FurnituresQuestions
+                              .questions[currentQuestionIndex]["Options"][2],
+                        ),
+                        appButton(
+                          context: context,
+                          ontap: () {
+                            nextQuestion(OptionsEnum.D.name);
+                          },
+                          text: FurnituresQuestions
+                              .questions[currentQuestionIndex]["Options"][3],
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
-            ),
-          ),
-          isTrueResult
-              ? Lottie.asset(repeat: false, "images/lottie/check.json")
-              : const Center()
-        ],
+              ),
+              isTrueResult
+                  ? Lottie.asset(repeat: false, "images/lottie/check.json")
+                  : const Center()
+            ],
+          );
+        },
       ),
     );
   }
+}
+
+mixin ScreenProperties {
+  late FurnituresCubit furnituresCubit;
 }
 
 enum OptionsEnum { A, B, C, D }
