@@ -1,0 +1,10 @@
+import 'package:eng_project/category_screens/clothes/clothes_view_model/clothes_state.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+class ClothesCubit extends Cubit<ClothesState> {
+  ClothesCubit() : super(ClothesInitial());
+
+  void refreshState() {
+    emit(ClothesDisplay());
+     }   
+}

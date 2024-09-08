@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:eng_project/category_screens/animals/questions.dart';
-import 'package:eng_project/category_screens/animals/screen/animals_view_model/animals_cubit.dart';
-import 'package:eng_project/category_screens/animals/screen/animals_view_model/animals_state.dart';
+import 'package:eng_project/category_screens/animals/animals_view_model/animals_cubit.dart';
+import 'package:eng_project/category_screens/animals/animals_view_model/animals_state.dart';
 import 'package:eng_project/constant/app_constant.dart';
 import 'package:eng_project/constant/extensions.dart';
 import 'package:eng_project/widgets/alert_dialog.dart';
@@ -59,79 +59,70 @@ class _AnimalsScreenState extends State<AnimalsScreen> with ScreenProperties {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color.fromARGB(225, 246, 242, 237),
-      floatingActionButton: BlocBuilder<AnimalsCubit, AnimalsState>(
-        builder: (context, state) {
-          if (state is AnimalsDisplay) {
-            return Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                appTextButton(
-                    ontap: () {
-                      appAlertDialog(
-                          context: context,
-                          title: "UYARI",
-                          alertBody: [
-                            const Text(
-                                "İlk sorudan tekrar başlamak istediğinize emin misiniz? ")
-                          ],
-                          buttonText: "Evet",
-                          buttonOntap: () {
-                            currentQuestionIndex = 0;
-                            isTrueResult = false;
-                            wrongPiece = 0;
-                            correctPiece = 0;
+      floatingActionButton: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          appTextButton(
+              ontap: () {
+                appAlertDialog(
+                    context: context,
+                    title: "UYARI",
+                    alertBody: [
+                      const Text(
+                          "İlk sorudan tekrar başlamak istediğinize emin misiniz? ")
+                    ],
+                    buttonText: "Evet",
+                    buttonOntap: () {
+                      currentQuestionIndex = 0;
+                      isTrueResult = false;
+                      wrongPiece = 0;
+                      correctPiece = 0;
 
-                            Navigator.pop(context);
-                            animalsCubit.refreshState();
-                          });
-                    },
-                    text: 'Başa Dön'),
-                Padding(
-                  padding: EdgeInsets.only(left: AppConstant.padding10),
-                  child: FloatingActionButton(
-                      child: Icon(Icons.arrow_forward_ios_rounded,
-                          color: AppConstant.white),
-                      onPressed: () {
-                        if (AnimalQuestions.questions[currentQuestionIndex]
-                                ["Index"] ==
-                            AnimalQuestions.questions.length) {
-                          errorFlushbar(
-                              context, "UYARI!!", "Listenin sonuna geldiniz..");
+                      Navigator.pop(context);
+                      animalsCubit.refreshState();
+                    });
+              },
+              text: 'Başa Dön'),
+          Padding(
+            padding: EdgeInsets.only(left: AppConstant.padding10),
+            child: FloatingActionButton(
+                child: Icon(Icons.arrow_forward_ios_rounded,
+                    color: AppConstant.white),
+                onPressed: () {
+                  if (AnimalQuestions.questions[currentQuestionIndex]
+                          ["Index"] ==
+                      AnimalQuestions.questions.length) {
+                    errorFlushbar(
+                        context, "UYARI!!", "Listenin sonuna geldiniz..");
 
-                          appAlertDialog(
-                              context: context,
-                              alertBody: [
-                                Text('Doğru Sayısı: $correctPiece'),
-                                Text('Yanlış Sayısı: $wrongPiece'),
-                                Text(
-                                    'Deneme Sayısı: ${wrongPiece + correctPiece}'),
-                              ],
-                              buttonOntap: () {
-                                Navigator.pop(context);
-                                Navigator.pop(context);
-                                Navigator.pop(context);
-                              },
-                              buttonText: 'Ana Sayfaya Dön',
-                              title: 'SONUCUNUZ');
-                        } else {
-                          if (isTrueResult == true) {
-                            currentQuestionIndex = (currentQuestionIndex + 1) %
-                                AnimalQuestions.questions.length;
-                            isTrueResult = false;
-                            animalsCubit.refreshState();
-                          } else {
-                            errorFlushbar(context, "UYARI!!",
-                                "Bu soruyu cevaplamadan yeni soruya geçemezsiniz");
-                          }
-                        }
-                      }),
-                )
-              ],
-            );
-          } else {
-            return SizedBox();
-          }
-        },
+                    appAlertDialog(
+                        context: context,
+                        alertBody: [
+                          Text('Doğru Sayısı: $correctPiece'),
+                          Text('Yanlış Sayısı: $wrongPiece'),
+                          Text('Deneme Sayısı: ${wrongPiece + correctPiece}'),
+                        ],
+                        buttonOntap: () {
+                          Navigator.pop(context);
+                          Navigator.pop(context);
+                          Navigator.pop(context);
+                        },
+                        buttonText: 'Ana Sayfaya Dön',
+                        title: 'SONUCUNUZ');
+                  } else {
+                    if (isTrueResult == true) {
+                      currentQuestionIndex = (currentQuestionIndex + 1) %
+                          AnimalQuestions.questions.length;
+                      isTrueResult = false;
+                      animalsCubit.refreshState();
+                    } else {
+                      errorFlushbar(context, "UYARI!!",
+                          "Bu soruyu cevaplamadan yeni soruya geçemezsiniz");
+                    }
+                  }
+                }),
+          )
+        ],
       ),
       appBar: AppBar(
         leading: IconButton(
