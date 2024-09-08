@@ -2,6 +2,7 @@ import 'package:eng_project/category_screens/animals/screen/animals_screen.dart'
 import 'package:eng_project/category_screens/animals/animals_view_model/animals_cubit.dart';
 import 'package:eng_project/category_screens/clothes/clothes_view_model/clothes_cubit_dart';
 import 'package:eng_project/category_screens/clothes/screen/clothes_screen.dart';
+import 'package:eng_project/category_screens/colors/colors_view_model/colors_cubit.dart';
 import 'package:eng_project/category_screens/colors/screen/colors_screen.dart';
 import 'package:eng_project/category_screens/fruits/screen/fruits_screen.dart';
 import 'package:eng_project/category_screens/furnitures/furnitures_screen.dart';
@@ -119,8 +120,13 @@ class _MainPageState extends State<MainPage> {
         Navigator.push(context,
             MaterialPageRoute(builder: (context) => const PlantsScreen()));
       case 5:
-        Navigator.push(context,
-            MaterialPageRoute(builder: (context) => const ColorsScreen()));
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => BlocProvider(
+                      create: (context) => ColorsCubit(),
+                      child: ColorsScreen(),
+                    )));
       case 6:
         Navigator.push(
           context,
