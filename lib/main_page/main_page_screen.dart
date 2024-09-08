@@ -1,4 +1,5 @@
 import 'package:eng_project/category_screens/animals/screen/animals_screen.dart';
+import 'package:eng_project/category_screens/animals/screen/animals_view_model/animals_cubit.dart';
 import 'package:eng_project/category_screens/clothes/screen/clothes_screen.dart';
 import 'package:eng_project/category_screens/colors/screen/colors_screen.dart';
 import 'package:eng_project/category_screens/fruits/screen/fruits_screen.dart';
@@ -10,6 +11,7 @@ import 'package:eng_project/constant/app_constant.dart';
 import 'package:eng_project/constant/extensions.dart';
 import 'package:eng_project/constant/localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class MainPage extends StatefulWidget {
@@ -97,7 +99,10 @@ class _MainPageState extends State<MainPage> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => const AnimalsScreen(),
+            builder: (context) => BlocProvider(
+              create: (context) => AnimalsCubit(),
+              child: AnimalsScreen(),
+            ),
           ),
         );
       case 1:
