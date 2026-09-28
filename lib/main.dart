@@ -21,7 +21,7 @@ class EngProject extends StatelessWidget {
             backgroundColor: AppConstant.darkBlue),
         bottomNavigationBarTheme:
             BottomNavigationBarThemeData(backgroundColor: Colors.orange[900]),
-        bottomAppBarTheme: BottomAppBarTheme(color: Colors.red[900]),
+        // bottomAppBarTheme: BottomAppBarTheme(color: Colors.red[900]),
         appBarTheme: AppBarTheme(
             titleTextStyle: const TextStyle(color: Colors.white, fontSize: 20),
             centerTitle: true,
